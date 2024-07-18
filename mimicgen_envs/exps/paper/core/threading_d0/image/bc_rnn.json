@@ -6,31 +6,31 @@
         "logging": {
             "terminal_output_to_txt": true,
             "log_tb": true,
-            "log_wandb": false,
-            "wandb_proj_name": "debug"
+            "log_wandb": true,
+            "wandb_proj_name": "core_threading_d0_image"
         },
         "save": {
             "enabled": true,
             "every_n_seconds": null,
-            "every_n_epochs": 20,
+            "every_n_epochs": 100,
             "epochs": [],
             "on_best_validation": false,
             "on_best_rollout_return": false,
             "on_best_rollout_success_rate": true
         },
         "epoch_every_n_steps": 500,
-        "validation_epoch_every_n_steps": 50,
+        "validation_epoch_every_n_steps": 150,
         "env": null,
         "additional_envs": null,
         "render": false,
-        "render_video": true,
+        "render_video": false,
         "keep_all_videos": false,
         "video_skip": 5,
         "rollout": {
             "enabled": true,
             "n": 50,
             "horizon": 400,
-            "rate": 20,
+            "rate": 100,
             "warmstart": 0,
             "terminate_on_success": true
         }

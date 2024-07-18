@@ -1,7 +1,7 @@
 {
     "algo_name": "bc",
     "experiment": {
-        "name": "core_mug_cleanup_d0_image",
+        "name": "core_mug_cleanup_d0_image_purged",
         "validate": false,
         "logging": {
             "terminal_output_to_txt": true,

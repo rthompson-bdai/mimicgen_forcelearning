@@ -1,45 +1,45 @@
 {
     "algo_name": "bc",
     "experiment": {
-        "name": "core_threading_d0_low_dim",
+        "name": "core_threading_d2_image_purged",
         "validate": false,
         "logging": {
             "terminal_output_to_txt": true,
             "log_tb": true,
             "log_wandb": true,
-            "wandb_proj_name": "core_threading_d0_low_dim"
+            "wandb_proj_name": "core_threading_d2_image"
         },
         "save": {
             "enabled": true,
             "every_n_seconds": null,
-            "every_n_epochs": 50,
+            "every_n_epochs": 100,
             "epochs": [],
             "on_best_validation": false,
             "on_best_rollout_return": false,
             "on_best_rollout_success_rate": true
         },
-        "epoch_every_n_steps": 100,
-        "validation_epoch_every_n_steps": 10,
+        "epoch_every_n_steps": 500,
+        "validation_epoch_every_n_steps": 150,
         "env": null,
         "additional_envs": null,
         "render": false,
-        "render_video": true,
+        "render_video": false,
         "keep_all_videos": false,
         "video_skip": 5,
         "rollout": {
             "enabled": true,
             "n": 50,
             "horizon": 400,
-            "rate": 50,
+            "rate": 100,
             "warmstart": 0,
             "terminate_on_success": true
         }
     },
     "train": {
-        "data": "/home/rthompson_theaiinstitute_com/bdai/projects/foundation_models/src/force_learning/mimicgen_forcelearning/mimicgen_envs/../datasets/core/threading_d0.hdf5",
-        "output_dir": "/home/rthompson_theaiinstitute_com/bdai/projects/foundation_models/src/force_learning/mimicgen_forcelearning/mimicgen_envs/../training_results/core/threading_d0/low_dim/trained_models",
-        "num_data_workers": 0,
-        "hdf5_cache_mode": "all",
+        "data": "/home/rthompson_theaiinstitute_com/bdai/projects/foundation_models/src/force_learning/mimicgen_forcelearning/mimicgen_envs/../datasets/core_processed/threading_d2_purged.hdf5",
+        "output_dir": "/home/rthompson_theaiinstitute_com/bdai/projects/foundation_models/src/force_learning/mimicgen_forcelearning/mimicgen_envs/../training_results/core/threading_d2_purged/image/trained_models",
+        "num_data_workers": 2,
+        "hdf5_cache_mode": "low_dim",
         "hdf5_use_swmr": true,
         "hdf5_load_next_obs": false,
         "hdf5_normalize_obs": false,
@@ -56,8 +56,8 @@
         ],
         "goal_mode": null,
         "cuda": true,
-        "batch_size": 100,
-        "num_epochs": 2000,
+        "batch_size": 16,
+        "num_epochs": 600,
         "seed": 1
     },
     "algo": {
@@ -65,7 +65,7 @@
             "policy": {
                 "optimizer_type": "adam",
                 "learning_rate": {
-                    "initial": 0.001,
+                    "initial": 0.0001,
                     "decay_factor": 0.1,
                     "epoch_schedule": [],
                     "scheduler_type": "multistep"
@@ -134,7 +134,7 @@
         "rnn": {
             "enabled": true,
             "horizon": 10,
-            "hidden_dim": 400,
+            "hidden_dim": 1000,
             "rnn_type": "LSTM",
             "num_layers": 2,
             "open_loop": false,
@@ -163,10 +163,12 @@
                 "low_dim": [
                     "robot0_eef_pos",
                     "robot0_eef_quat",
-                    "robot0_gripper_qpos",
-                    "object"
+                    "robot0_gripper_qpos"
                 ],
-                "rgb": [],
+                "rgb": [
+                    "agentview_image",
+                    "robot0_eye_in_hand_image"
+                ],
                 "depth": [],
                 "scan": []
             },
@@ -186,9 +188,28 @@
             },
             "rgb": {
                 "core_class": "VisualCore",
-                "core_kwargs": {},
-                "obs_randomizer_class": null,
-                "obs_randomizer_kwargs": {}
+                "core_kwargs": {
+                    "feature_dimension": 64,
+                    "backbone_class": "ResNet18Conv",
+                    "backbone_kwargs": {
+                        "pretrained": false,
+                        "input_coord_conv": false
+                    },
+                    "pool_class": "SpatialSoftmax",
+                    "pool_kwargs": {
+                        "num_kp": 32,
+                        "learnable_temperature": false,
+                        "temperature": 1.0,
+                        "noise_std": 0.0
+                    }
+                },
+                "obs_randomizer_class": "CropRandomizer",
+                "obs_randomizer_kwargs": {
+                    "crop_height": 76,
+                    "crop_width": 76,
+                    "num_crops": 1,
+                    "pos_enc": false
+                }
             },
             "depth": {
                 "core_class": "VisualCore",
