@@ -8,8 +8,9 @@ from six import with_metaclass
 import robosuite
 from robosuite.environments.manipulation.single_arm_env import SingleArmEnv
 from robosuite.environments.manipulation.nut_assembly import NutAssembly, NutAssemblySquare
+from robosuite.environments.manipulation.small_nut_assembly import SmallNutAssembly, SmallNutAssemblySquare
 from robosuite.models.arenas import PegsArena
-from robosuite.models.objects import SquareNutObject, RoundNutObject
+from robosuite.models.objects import SquareNutObject, SmallSquareNutObject, RoundNutObject, SmallRoundNutObject
 from robosuite.models.tasks import ManipulationTask
 from robosuite.utils.placement_samplers import SequentialCompositeSampler, UniformRandomSampler
 from robosuite.utils.observables import Observable, sensor
@@ -60,6 +61,68 @@ class NutAssembly_D0(NutAssembly, SingleArmEnv_MG):
 
 
 class Square_D0(NutAssemblySquare, SingleArmEnv_MG):
+    """
+    Augment robosuite nut assembly square task for mimicgen.
+    """
+    def __init__(self, **kwargs):
+        assert "placement_initializer" not in kwargs, "this class defines its own placement initializer"
+
+        # make placement initializer here
+        nut_names = ("SquareNut", "RoundNut")
+
+        # note: makes round nut init somewhere far off the table
+        round_nut_far_init = (-1.1, -1.0)
+
+        bounds = self._get_initial_placement_bounds()
+        nut_x_ranges = (bounds["nut"]["x"], bounds["nut"]["x"])
+        nut_y_ranges = (bounds["nut"]["y"], round_nut_far_init)
+        nut_z_ranges = (bounds["nut"]["z_rot"], bounds["nut"]["z_rot"])
+        nut_references = (bounds["nut"]["reference"], bounds["nut"]["reference"])
+
+        placement_initializer = SequentialCompositeSampler(name="ObjectSampler")
+        for nut_name, x_range, y_range, z_range, ref in zip(nut_names, nut_x_ranges, nut_y_ranges, nut_z_ranges, nut_references):
+            placement_initializer.append_sampler(
+                sampler=UniformRandomSampler(
+                    name=f"{nut_name}Sampler",
+                    x_range=x_range,
+                    y_range=y_range,
+                    rotation=z_range,
+                    rotation_axis='z',
+                    ensure_object_boundary_in_range=False,
+                    ensure_valid_placement=True,
+                    reference_pos=ref,
+                    z_offset=0.02,
+                )
+            )
+
+        NutAssemblySquare.__init__(self, placement_initializer=placement_initializer, **kwargs)
+
+    def edit_model_xml(self, xml_str):
+        # make sure we don't get a conflict for function implementation
+        return SingleArmEnv_MG.edit_model_xml(self, xml_str)
+
+    def _get_initial_placement_bounds(self):
+        """
+        Internal function to get bounds for randomization of initial placements of objects (e.g.
+        what happens when env.reset is called). Should return a dictionary with the following
+        structure:
+            object_name
+                x: 2-tuple for low and high values for uniform sampling of x-position
+                y: 2-tuple for low and high values for uniform sampling of y-position
+                z_rot: 2-tuple for low and high values for uniform sampling of z-rotation
+                reference: np array of shape (3,) for reference position in world frame (assumed to be static and not change)
+        """
+        return dict(
+            nut=dict(
+                x=(-0.115, -0.11),
+                y=(0.11, 0.225),
+                z_rot=(0., 2. * np.pi),
+                # NOTE: hardcoded @self.table_offset since this might be called in init function
+                reference=np.array((0, 0, 0.82)),
+            ),
+        )
+
+class Small_Square_D0(SmallNutAssemblySquare, SingleArmEnv_MG):
     """
     Augment robosuite nut assembly square task for mimicgen.
     """
