@@ -157,7 +157,7 @@ class Small_Square_D0(SmallNutAssemblySquare, SingleArmEnv_MG):
                 )
             )
 
-        NutAssemblySquare.__init__(self, placement_initializer=placement_initializer, **kwargs)
+        SmallNutAssemblySquare.__init__(self, placement_initializer=placement_initializer, **kwargs)
 
     def edit_model_xml(self, xml_str):
         # make sure we don't get a conflict for function implementation
